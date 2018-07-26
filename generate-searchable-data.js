@@ -2,18 +2,9 @@
 // CONSTANTS
 
 const PATHS = {
-  TRIE_CLASS: '../trie-class.js',
-  RAW_DATA_JSON: '../../data/products-raw.json',
-  PROCESSED_DATA_JSON: `${__dirname}/../../data/products-processed.json`,
-}
-const STRINGS = {
-  PRODUCT_TYPES: {
-    CREDIT_CARD: 'Credit Card',
-    BANK: 'Bank',
-    INVESTMENT: 'Investment',
-    LOAN: 'Loan',
-    MORTGAGE: 'Mortgage',
-  }
+  TRIE_CLASS: './Trie.js',
+  RAW_DATA_JSON: './data/data-raw.json',
+  PROCESSED_DATA_JSON: './data/data-searchable.json',
 }
 
 const STARTING_ID = 10000;
@@ -33,8 +24,6 @@ function processData(productEntries) {
   let id = STARTING_ID;
 
   for (const entry of productEntries) {
-    entry.type = prettifyProductType(entry.type);
-
     // deduplicate products
     if (!productNameSet.has(entry.name)) {
       productNameSet.add(entry.name);
@@ -58,12 +47,8 @@ function processData(productEntries) {
   return processedObj;
 }
 
-function prettifyProductType(productType) {
-  return STRINGS.PRODUCT_TYPES[productType];
-}
-
 function storeEntryInTrie(entry, trie) {
-    const keyword = stripSpecialCharacters(`${entry.name} ${entry.type}`).replace(/\s+/g, ' ');
+    const keyword = `${entry.name} ${entry.type}`.replace(/\s+/g, ' ');
 
     console.log(keyword);
 
@@ -74,13 +59,6 @@ function storeEntryInDict(entry, dict) {
   if (!dict[entry.id]) {
     dict[entry.id] = entry;
   }
-}
-
-// don't require search to include parentheses, dashes, etc
-function stripSpecialCharacters(str) {
-  const result = str.replace(/[^\w\s]|_/g,'');
-
-  return result;
 }
 
 function saveProcessedData(outputObj) {

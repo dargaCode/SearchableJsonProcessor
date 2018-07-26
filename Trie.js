@@ -116,4 +116,4 @@ function Trie() {
   };
 }
 
-export default Trie;
+module.exports = Trie;
