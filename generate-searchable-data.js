@@ -1,4 +1,44 @@
 
+
+/*
+  load the json
+  process it
+    increment id
+    create a searchable string for each entry
+    break string into multiple keys
+    store id in trie by each key
+    store entry by id in dict
+  return processed data object?
+  save json
+*/
+
+class JsonProcessor {
+  constructor(paths, startingId) {
+    const Trie = require(PATHS.TRIE_CLASS);
+    const fs = require('fs');
+    const jsonData = require(PATHS.RAW_DATA_JSON);
+
+    this.paths = paths;
+    this.id = startingId;
+
+
+    this.accumulators = Object.freeze({
+      entryNameSet: new Set(),
+      entryTrie: new Trie(),
+      entryDictL: {},
+    });
+
+  }
+
+}
+
+
+
+
+
+
+
+
 // CONSTANTS
 
 const PATHS = {
@@ -9,8 +49,7 @@ const PATHS = {
 
 // does the array have a key name?
 // set to null if not.
-const ENTRY_ARRAY_KEY = 'entries';
-
+const ENTRY_ARRAY_KEY = 'books';
 const STARTING_ID = 10000;
 
 // DEPENDENCIES
@@ -22,33 +61,40 @@ const fs = require('fs');
 // FUNCTIONS
 
 function processEntries(entries) {
-  const entryNameSet = new Set()
-  const entryTrie = new Trie();
-  const entryDict = {};
+  const accumulators = {
+    entryNameSet: new Set(),
+    entryTrie: new Trie(),
+    entryDict: {},
+  }
+
   let id = STARTING_ID;
 
   for (const entry of entries) {
     // deduplicate entries
-    if (!entryNameSet.has(entry.name)) {
-      entryNameSet.add(entry.name);
+    if (!accumulators.entryNameSet.has(entry.name)) {
+      accumulators.entryNameSet.add(entry.name);
 
       // id is used to reduce duplicated data in the trie
       entry.id = ++id;
-      // store the entry's id in a trie by its display name for fast lookup.
-      storeEntryInTrie(entry, entryTrie);
-      // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
-      storeEntryInDict(entry, entryDict);
+      processEntry(entry, id, accumulators.entryTrie, accumulators.entryDict);
     }
   }
 
   // combine both structures into single json, for fewer requests
   const processedObj = {
     // Trie only surfaces a jsonString, not references to its actual nodes.
-    trie: JSON.parse(entryTrie.getJsonString()),
-    dict: entryDict,
+    trie: JSON.parse(accumulators.entryTrie.getJsonString()),
+    dict: accumulators.entryDict,
   };
 
   return processedObj;
+}
+
+function processEntry(entry, id, entryTrie, entryDict) {
+  // store the entry's id in a trie by its display name for fast lookup.
+  storeEntryInTrie(entry, entryTrie);
+  // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
+  storeEntryInDict(entry, entryDict);
 }
 
 function storeEntryInTrie(entry, trie) {
