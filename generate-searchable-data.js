@@ -14,11 +14,11 @@
 
 class JsonProcessor {
   constructor(paths, entryArrayKey, startingId) {
-    this.paths = paths;
+    this.PATHS = paths;
     this.currentId = startingId;
 
-    const Trie = require(PATHS.TRIE_CLASS);
-    const jsonData = require(PATHS.RAW_DATA_JSON);
+    const Trie = require(this.PATHS.TRIE_CLASS);
+    const jsonData = require(this.PATHS.RAW_DATA_JSON);
     // if there a key name for the top level array?
     this.entryData = entryArrayKey ?
       jsonData[entryArrayKey] :
@@ -26,115 +26,94 @@ class JsonProcessor {
 
     this.accumulators = Object.freeze({
       entryNameSet: new Set(),
-      entryTrie: new Trie(),
-      entryDict: {},
+      entriesTrie: new Trie(),
+      entriesDict: {},
     });
   }
 
   processDataEntries() {
+    for (const entry of this.entryData) {
+      // deduplicate entries
+      if (!this.accumulators.entryNameSet.has(entry.name)) {
+        this.accumulators.entryNameSet.add(entry.name);
 
+        // id is used to reduce duplicated data in the trie
+        entry.id = ++this.currentId;
+        this.processEntry(entry, this.currentId, this.accumulators.entriesTrie, this.accumulators.entriesDict);
+      }
+    }
+
+    // combine both structures into single json, for fewer requests
+    const processedObj = {
+      // Trie only surfaces a jsonString, not references to its actual nodes.
+      trie: JSON.parse(this.accumulators.entriesTrie.getJsonString()),
+      dict: this.accumulators.entriesDict,
+    };
+
+    return processedObj;
+  }
+
+  processEntry(entry, id, entriesTrie, entriesDict) {
+    // store the entry's id in a trie by its display name for fast lookup.
+    this.storeEntryInTrie(entry, entriesTrie);
+    // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
+    this.storeEntryInDict(entry, entriesDict);
+  }
+
+  storeEntryInTrie(entry, trie) {
+      const keyword = `${entry.name} ${entry.type}`.replace(/\s+/g, ' ');
+
+      console.log(keyword);
+
+      trie.store(keyword, entry.id);
+  }
+
+  storeEntryInDict(entry, dict) {
+    if (!dict[entry.id]) {
+      dict[entry.id] = entry;
+    }
   }
 
   saveProcessedData() {
+    const outputObj = {
+      trie: this.accumulators.entriesTrie,
+      dict: this.accumulators.entriesDict,
+    };
+
+    const jsonString = JSON.stringify(outputObj);
     const fs = require('fs');
-  }
 
-}
-
-
-
-
-
-
-
-
-// CONSTANTS
-
-const PATHS = {
-  TRIE_CLASS: './Trie.js',
-  RAW_DATA_JSON: './data/data-raw.json',
-  PROCESSED_DATA_JSON: './data/data-searchable.json',
-}
-
-const ENTRY_ARRAY_KEY = 'books';
-const STARTING_ID = 10000;
-
-// DEPENDENCIES
-
-const jsonData = require(PATHS.RAW_DATA_JSON);
-const Trie = require(PATHS.TRIE_CLASS);
-const fs = require('fs');
-
-// FUNCTIONS
-
-function processDataEntries(entries) {
-  const accumulators = {
-    entryNameSet: new Set(),
-    entryTrie: new Trie(),
-    entryDict: {},
-  }
-
-  let id = STARTING_ID;
-
-  for (const entry of entries) {
-    // deduplicate entries
-    if (!accumulators.entryNameSet.has(entry.name)) {
-      accumulators.entryNameSet.add(entry.name);
-
-      // id is used to reduce duplicated data in the trie
-      entry.id = ++id;
-      processEntry(entry, id, accumulators.entryTrie, accumulators.entryDict);
-    }
-  }
-
-  // combine both structures into single json, for fewer requests
-  const processedObj = {
-    // Trie only surfaces a jsonString, not references to its actual nodes.
-    trie: JSON.parse(accumulators.entryTrie.getJsonString()),
-    dict: accumulators.entryDict,
-  };
-
-  return processedObj;
-}
-
-function processEntry(entry, id, entryTrie, entryDict) {
-  // store the entry's id in a trie by its display name for fast lookup.
-  storeEntryInTrie(entry, entryTrie);
-  // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
-  storeEntryInDict(entry, entryDict);
-}
-
-function storeEntryInTrie(entry, trie) {
-    const keyword = `${entry.name} ${entry.type}`.replace(/\s+/g, ' ');
-
-    console.log(keyword);
-
-    trie.store(keyword, entry.id);
-}
-
-function storeEntryInDict(entry, dict) {
-  if (!dict[entry.id]) {
-    dict[entry.id] = entry;
+    console.log('Saving processed data JSON...\n');
+    fs.writeFile(this.PATHS.PROCESSED_DATA_JSON, jsonString, (err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(jsonString);
+        console.log(`\n${this.PATHS.PROCESSED_DATA_JSON} saved!`);
+      }
+    });
   }
 }
-
-function saveProcessedData(outputObj) {
-  const jsonString = JSON.stringify(outputObj);
-
-  console.log('Saved processed data JSON...\n');
-  fs.writeFile(PATHS.PROCESSED_DATA_JSON, jsonString, function (err) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(jsonString);
-      console.log(`\n${PATHS.PROCESSED_DATA_JSON} saved!`);
-    }
-  });
-}
-
-// MAIN
 
 (function main() {
+
+  const PATHS = {
+    TRIE_CLASS: './Trie.js',
+    RAW_DATA_JSON: './data/data-raw.json',
+    PROCESSED_DATA_JSON: './data/data-searchable.json',
+  }
+
+  const ENTRY_ARRAY_KEY = 'books';
+  const STARTING_ID = 10000;
+
+  // DEPENDENCIES
+
+  const Trie = require(PATHS.TRIE_CLASS);
+  const jsonData = require(PATHS.RAW_DATA_JSON);
+
+
+
+
   const entryArrayKey = 'books';
   const startingId = 10000;
 
@@ -142,13 +121,4 @@ function saveProcessedData(outputObj) {
 
   jsonProcessor.processDataEntries();
   jsonProcessor.saveProcessedData();
-
-  // if there a key name for the top level array?
-  const entryData = ENTRY_ARRAY_KEY ?
-    jsonData[ENTRY_ARRAY_KEY] :
-    jsonData;
-
-  const processedDataObj = processDataEntries(entryData);
-
-  saveProcessedData(processedDataObj);
 }());
