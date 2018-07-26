@@ -13,21 +13,30 @@
 */
 
 class JsonProcessor {
-  constructor(paths, startingId) {
-    const Trie = require(PATHS.TRIE_CLASS);
-    const fs = require('fs');
-    const jsonData = require(PATHS.RAW_DATA_JSON);
-
+  constructor(paths, entryArrayKey, startingId) {
     this.paths = paths;
-    this.id = startingId;
+    this.currentId = startingId;
 
+    const Trie = require(PATHS.TRIE_CLASS);
+    const jsonData = require(PATHS.RAW_DATA_JSON);
+    // if there a key name for the top level array?
+    this.entryData = entryArrayKey ?
+      jsonData[entryArrayKey] :
+      jsonData;
 
     this.accumulators = Object.freeze({
       entryNameSet: new Set(),
       entryTrie: new Trie(),
-      entryDictL: {},
+      entryDict: {},
     });
+  }
 
+  processDataEntries() {
+
+  }
+
+  saveProcessedData() {
+    const fs = require('fs');
   }
 
 }
@@ -47,8 +56,6 @@ const PATHS = {
   PROCESSED_DATA_JSON: './data/data-searchable.json',
 }
 
-// does the array have a key name?
-// set to null if not.
 const ENTRY_ARRAY_KEY = 'books';
 const STARTING_ID = 10000;
 
@@ -60,7 +67,7 @@ const fs = require('fs');
 
 // FUNCTIONS
 
-function processEntries(entries) {
+function processDataEntries(entries) {
   const accumulators = {
     entryNameSet: new Set(),
     entryTrie: new Trie(),
@@ -128,12 +135,20 @@ function saveProcessedData(outputObj) {
 // MAIN
 
 (function main() {
+  const entryArrayKey = 'books';
+  const startingId = 10000;
+
+  const jsonProcessor = new JsonProcessor(PATHS, entryArrayKey, startingId);
+
+  jsonProcessor.processDataEntries();
+  jsonProcessor.saveProcessedData();
+
   // if there a key name for the top level array?
   const entryData = ENTRY_ARRAY_KEY ?
     jsonData[ENTRY_ARRAY_KEY] :
     jsonData;
 
-  const processedDataObj = processEntries(entryData);
+  const processedDataObj = processDataEntries(entryData);
 
   saveProcessedData(processedDataObj);
 }());
