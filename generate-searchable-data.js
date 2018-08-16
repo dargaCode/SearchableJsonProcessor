@@ -24,6 +24,11 @@ const JsonProcessor = require('./JsonProcessor.js');
 
   const jsonProcessor = new JsonProcessor(PATHS, entryArrayKey, startingId);
 
-  jsonProcessor.processDataEntries();
+  jsonProcessor.processDataEntries(function(entry) {
+      const key = `${entry.title} by ${entry.author}`;
+      console.log(key);
+
+      return key;
+  });
   jsonProcessor.saveProcessedData();
 }());

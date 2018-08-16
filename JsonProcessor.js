@@ -24,21 +24,26 @@ class JsonProcessor {
       jsonData;
 
     this.accumulators = Object.freeze({
-      entryNameSet: new Set(),
+      entryKeySet: new Set(),
       entriesTrie: new Trie(),
       entriesDict: {},
     });
   }
 
-  processDataEntries() {
+  processDataEntries(getKeyword) {
     for (const entry of this.entryData) {
-      // deduplicate entries
-      if (!this.accumulators.entryNameSet.has(entry.name)) {
-        this.accumulators.entryNameSet.add(entry.name);
+      entry.key = getKeyword(entry);
 
-        // id is used to reduce duplicated data in the trie
+      // deduplicate entries
+      if (!this.accumulators.entryKeySet.has(entry.key)) {
+        this.accumulators.entryKeySet.add(entry.name);
+
+        // id is used to reduce redundant data in the trie
         entry.id = ++this.currentId;
-        this.processEntry(entry, this.currentId, this.accumulators.entriesTrie, this.accumulators.entriesDict);
+        this.processEntry(
+          entry,
+          this.accumulators.entriesTrie,
+          this.accumulators.entriesDict);
       }
     }
 
@@ -52,7 +57,7 @@ class JsonProcessor {
     return processedObj;
   }
 
-  processEntry(entry, id, entriesTrie, entriesDict) {
+  processEntry(entry, entriesTrie, entriesDict) {
     // store the entry's id in a trie by its display name for fast lookup.
     this.storeEntryInTrie(entry, entriesTrie);
     // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
@@ -60,11 +65,7 @@ class JsonProcessor {
   }
 
   storeEntryInTrie(entry, trie) {
-      const keyword = `${entry.name} ${entry.type}`.replace(/\s+/g, ' ');
-
-      console.log(keyword);
-
-      trie.store(keyword, entry.id);
+      trie.store(entry.key, entry.id);
   }
 
   storeEntryInDict(entry, dict) {
@@ -75,7 +76,7 @@ class JsonProcessor {
 
   saveProcessedData() {
     const outputObj = {
-      trie: this.accumulators.entriesTrie,
+      trie: this.accumulators.entriesTrie.getJsonString(),
       dict: this.accumulators.entriesDict,
     };
 
