@@ -111,8 +111,10 @@ function Trie() {
     return resultSet;
   }
 
-  this.getJsonString = function() {
-    return JSON.stringify(_rootNode);
+  this.getNodesCopy = function() {
+    console.log(_rootNode);
+
+    return JSON.parse(JSON.stringify(_rootNode));
   };
 }
 

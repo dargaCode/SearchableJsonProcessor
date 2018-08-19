@@ -49,8 +49,7 @@ class JsonProcessor {
 
     // combine both structures into single json, for fewer requests
     const processedObj = {
-      // Trie only surfaces a jsonString, not references to its actual nodes.
-      trie: JSON.parse(this.accumulators.entriesTrie.getJsonString()),
+      trie: this.accumulators.entriesTrie.getNodesCopy(),
       dict: this.accumulators.entriesDict,
     };
 
@@ -76,7 +75,7 @@ class JsonProcessor {
 
   saveProcessedData() {
     const outputObj = {
-      trie: this.accumulators.entriesTrie.getJsonString(),
+      trie: this.accumulators.entriesTrie.getNodesCopy(),
       dict: this.accumulators.entriesDict,
     };
 
