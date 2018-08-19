@@ -112,8 +112,6 @@ function Trie() {
   }
 
   this.getNodesCopy = function() {
-    console.log(_rootNode);
-
     return JSON.parse(JSON.stringify(_rootNode));
   };
 }

@@ -74,13 +74,12 @@ class JsonProcessor {
   }
 
   saveProcessedData() {
+    const fs = require('fs');
     const outputObj = {
       trie: this.accumulators.entriesTrie.getNodesCopy(),
       dict: this.accumulators.entriesDict,
     };
-
     const jsonString = JSON.stringify(outputObj);
-    const fs = require('fs');
 
     console.log('Saving processed data JSON...\n');
     fs.writeFile(this.PATHS.PROCESSED_DATA_JSON, jsonString, (err) => {
