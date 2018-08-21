@@ -1,16 +1,4 @@
 
-/*
-  load the json
-  process it
-    increment id
-    create a searchable string for each entry
-    break string into multiple keys
-    store id in trie by each key
-    store entry by id in dict
-  return processed data object?
-  save json
-*/
-
 class JsonProcessor {
   constructor(paths, entryArrayKey, startingId) {
     this.PATHS = paths;
@@ -85,29 +73,10 @@ class JsonProcessor {
 
     while (words.length > 0) {
       completion = `${words.pop()} ${completion}`;
-      completions.unshift(completion);
+      completions.push(completion);
     }
 
     return completions;
-  }
-
-  saveProcessedData() {
-    const fs = require('fs');
-    const outputObj = {
-      trie: this.accumulators.entriesTrie.getNodesCopy(),
-      dict: this.accumulators.entriesDict,
-    };
-    const jsonString = JSON.stringify(outputObj);
-
-    console.log('Saving processed data JSON...\n');
-    fs.writeFile(this.PATHS.PROCESSED_DATA_JSON, jsonString, (err) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(jsonString);
-        console.log(`\n${this.PATHS.PROCESSED_DATA_JSON} saved!`);
-      }
-    });
   }
 }
 
