@@ -32,7 +32,7 @@ class JsonProcessor {
 
   processDataEntries(getKeyword) {
     for (const entry of this.entryData) {
-      entry.key = getKeyword(entry);
+      entry.key = getKeyword(entry).toLowerCase();
 
       // deduplicate entries
       if (!this.accumulators.entryKeySet.has(entry.key)) {
@@ -57,20 +57,38 @@ class JsonProcessor {
   }
 
   processEntry(entry, entriesTrie, entriesDict) {
-    // store the entry's id in a trie by its display name for fast lookup.
-    this.storeEntryInTrie(entry, entriesTrie);
     // store the entry's other data in a dict by its id, to help keep the trie as small as possible.
     this.storeEntryInDict(entry, entriesDict);
+
+    // store the entry's id in a trie by its display name for fast lookup.
+    this.storeEntryInTrie(entry, entriesTrie);
   }
 
   storeEntryInTrie(entry, trie) {
-      trie.store(entry.key, entry.id);
+    const keywords = this.getSuccessiveKeywordCompletions(entry.key);
+
+    for (const keyword of keywords) {
+      trie.store(keyword, entry.id);
+    }
   }
 
   storeEntryInDict(entry, dict) {
     if (!dict[entry.id]) {
       dict[entry.id] = entry;
     }
+  }
+
+  getSuccessiveKeywordCompletions(key) {
+    const completions = [];
+    const words = key.split(' ');
+    let completion = '';
+
+    while (words.length > 0) {
+      completion = `${words.pop()} ${completion}`;
+      completions.unshift(completion);
+    }
+
+    return completions;
   }
 
   saveProcessedData() {
