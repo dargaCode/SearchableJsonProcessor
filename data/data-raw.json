@@ -2,39 +2,48 @@
   "books": [
     {
       "title": "The Magicians",
-      "author": "Lev Grossman"
+      "author": "Lev Grossman",
+      "category": "Fantasy"
     },
     {
       "title": "American Gods",
-      "author": "Neil Gaiman"
+      "author": "Neil Gaiman",
+      "category": "Fantasy"
     },
     {
       "title": "Gravity's Rainbow",
-      "author": "Thomas Pynchon"
+      "author": "Thomas Pynchon",
+      "category": "Literary Fiction"
     },
     {
       "title": "The Hyperion Cantos",
-      "author": "Dan Simmons"
+      "author": "Dan Simmons",
+      "category": "Science Fiction"
     },
     {
       "title": "A Brief History of Time",
-      "author": "Stephen Hawking"
+      "author": "Stephen Hawking",
+      "category": "Physics"
     },
     {
       "title": "Gardens of the Moon",
-      "author": "Steven Erikson"
+      "author": "Steven Erikson",
+      "category": "Fantasy"
     },
     {
       "title": "The Baroque Cycle",
-      "author": "Neal Stephenson"
+      "author": "Neal Stephenson",
+      "category": "Historical Fiction"
     },
     {
       "title": "The Mars Trilogy",
-      "author": "Kim Stanley Robinson"
+      "author": "Kim Stanley Robinson",
+      "category": "Science Fiction"
     },
     {
       "title": "The Name of the Wind",
-      "author": "Patrick Rothfuss"
+      "author": "Patrick Rothfuss",
+      "category": "Fantasy"
     }
   ]
 }

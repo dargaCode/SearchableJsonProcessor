@@ -55,6 +55,10 @@ class JsonProcessor {
   storeEntryInTrie(entry, trie) {
     const keywords = this.getSuccessiveKeywordCompletions(entry.key);
 
+    if (entry.category) {
+      keywords.push(entry.category);
+    }
+
     for (const keyword of keywords) {
       trie.store(keyword, entry.id);
     }
